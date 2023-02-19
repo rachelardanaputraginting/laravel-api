@@ -30,13 +30,6 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        if ($request->price < 10000) {
-            throw ValidationException::withMessages([
-                "price" => "Your price is to low"
-            ]);
-        }
-
-
         $product = Product::create($request->toArray());
 
         // $product =  Product::create([
@@ -70,9 +63,21 @@ class ProductController extends Controller
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
-        //
+        $product->update($request->toArray());
+
+        // $product =  Product::create([
+        //     'name' => $request->name,
+        //     'description' => $request->description,
+        //     'price' => $request->price,
+        //     'category_id' => $request->category_id
+        // ]);
+
+        return response()->json([
+            "message" => "Product was updated",
+            "product" => new ProductResource($product)
+        ]);
     }
 
     /**
