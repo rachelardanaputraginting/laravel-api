@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductRequest;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductSingleResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -14,7 +19,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::all();
+        return ProductResource::collection(Product::paginate(8));
     }
 
     /**
@@ -23,9 +28,28 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        //
+        if ($request->price < 10000) {
+            throw ValidationException::withMessages([
+                "price" => "Your price is to low"
+            ]);
+        }
+
+
+        $product = Product::create($request->toArray());
+
+        // $product =  Product::create([
+        //     'name' => $request->name,
+        //     'description' => $request->description,
+        //     'price' => $request->price,
+        //     'category_id' => $request->category_id
+        // ]);
+
+        return response()->json([
+            "message" => "Product was created",
+            "product" => new ProductResource($product)
+        ]);
     }
 
     /**
@@ -36,7 +60,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return $product;
+        return new ProductSingleResource($product);
     }
 
     /**
